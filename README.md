@@ -2,7 +2,7 @@
 
 A web-based application designed to help students organize their studies, manage tasks, set deadlines, and track their academic progress in one place.
 
-🌐 Live Practice
+🌐 Live Hack
 
 Website: "Study Tracker" (https://achuthsivadasan2006-hash.github.io/Main-project/)
 
