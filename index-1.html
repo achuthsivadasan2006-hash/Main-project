@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Tracker — Your study, in focus</title>
+  <style>
+    :root {
+      --bg: #f5f7fb; --surface: #ffffff; --ink: #18233b; --muted: #71809a;
+      --line: #e7ebf3; --primary: #5b5ce2; --primary-dark: #4546c8;
+      --mint: #dff8ee; --mint-ink: #168568; --peach: #fff0e6; --peach-ink: #c16a35;
+      --lavender: #eeedff; --shadow: 0 12px 34px rgba(38, 49, 91, .07);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 245px minmax(0, 1fr); }
+    aside { background: #fff; border-right: 1px solid var(--line); padding: 28px 18px; display: flex; flex-direction: column; gap: 28px; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; font-weight: 800; font-size: 19px; letter-spacing: -.5px; }
+    .brand-mark { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 12px; color: white; background: linear-gradient(135deg,#7778ff,#494bd2); box-shadow: 0 7px 15px #5b5ce244; }
+    .nav-label { color: #9aa5b8; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; padding: 0 13px; margin-bottom: 8px; }
+    nav { display: grid; gap: 6px; }
+    .nav-btn { display: flex; align-items: center; gap: 12px; border: 0; background: transparent; color: #75819a; padding: 12px 13px; border-radius: 11px; text-align: left; font-weight: 650; font-size: 13px; }
+    .nav-btn span { width: 20px; text-align: center; font-size: 16px; }
+    .nav-btn.active, .nav-btn:hover { color: var(--primary); background: #f0f0ff; }
+    .side-note { margin-top: auto; padding: 18px; border-radius: 17px; background: linear-gradient(145deg,#f0efff,#e6f8f4); }
+    .side-note .emoji { font-size: 24px; }
+    .side-note h3 { font-size: 14px; margin: 12px 0 5px; }
+    .side-note p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 0 0 12px; }
+    .mini-progress { height: 6px; border-radius: 99px; background: #d9dff0; overflow: hidden; }
+    .mini-progress div { height: 100%; width: 65%; background: var(--primary); border-radius: inherit; }
+    main { min-width: 0; padding: 30px clamp(18px, 3.5vw, 48px) 45px; max-width: 1600px; width: 100%; margin: 0 auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 30px; }
+    .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: var(--primary); text-transform: uppercase; }
+    h1 { font-size: clamp(25px, 3vw, 34px); letter-spacing: -1.2px; margin: 6px 0 0; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .date-chip, .profile { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); background: white; border-radius: 12px; padding: 10px 13px; font-size: 12px; color: #56627a; }
+    .avatar { width: 34px; height: 34px; border-radius: 11px; background: #ffdfc8; color: #9a542d; display: grid; place-items: center; font-weight: 800; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 22px; }
+    .stat, .panel { background: var(--surface); border: 1px solid #edf0f6; border-radius: 18px; box-shadow: var(--shadow); }
+    .stat { padding: 19px; position: relative; overflow: hidden; }
+    .stat-head { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; font-weight: 650; gap: 6px; }
+    .stat-icon { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 11px; background: var(--lavender); font-size: 17px; }
+    .stat-value { font-size: 29px; font-weight: 800; letter-spacing: -1px; margin-top: 13px; }
+    .stat-foot { font-size: 11px; color: var(--muted); margin-top: 5px; }
+    .stat-foot strong { color: var(--mint-ink); }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr); gap: 20px; align-items: start; }
+    .left-stack, .right-stack { display: grid; gap: 20px; min-width: 0; }
+    .panel { padding: 22px; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    h2 { margin: 0; font-size: 16px; letter-spacing: -.3px; }
+    .panel-sub { color: var(--muted); font-size: 11px; margin-top: 5px; }
+    .text-btn { color: var(--primary); background: none; border: 0; font-weight: 750; font-size: 12px; white-space: nowrap; }
+    .primary-btn { border: 0; color: white; background: var(--primary); padding: 11px 15px; border-radius: 10px; font-size: 12px; font-weight: 750; box-shadow: 0 6px 14px #5b5ce22c; }
+    .primary-btn:hover { background: var(--primary-dark); }
+    .filter-row { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+    .filter { border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; color: #7b879c; background: #fff; font-size: 11px; font-weight: 700; }
+    .filter.active { background: #f0f0ff; border-color: #dadaff; color: var(--primary); }
+    .task-list { display: grid; gap: 9px; }
+    .task { border: 1px solid #edf0f5; border-radius: 13px; padding: 13px; display: flex; align-items: center; gap: 12px; transition: .2s; }
+    .task:hover { border-color: #d7d8ff; transform: translateY(-1px); }
+    .task-check { appearance: none; width: 19px; height: 19px; flex: 0 0 19px; border: 1.7px solid #cbd2e0; border-radius: 6px; display: grid; place-items: center; margin: 0; cursor: pointer; }
+    .task-check:checked { background: var(--primary); border-color: var(--primary); }
+    .task-check:checked::after { content: "✓"; color: white; font-size: 12px; font-weight: 800; }
+    .task-info { flex: 1; min-width: 0; }
+    .task-title { font-size: 12px; font-weight: 750; overflow-wrap: anywhere; }
+    .task.done .task-title { text-decoration: line-through; color: #9ba5b5; }
+    .task-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 10px; margin-top: 6px; }
+    .tag { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 6px; background: #f0f0ff; color: #5d5ed2; font-size: 10px; font-weight: 750; }
+    .tag.green { background: var(--mint); color: var(--mint-ink); }
+    .tag.orange { background: var(--peach); color: var(--peach-ink); }
+    .task-time { color: #7c879b; font-size: 11px; white-space: nowrap; }
+    .empty { color: var(--muted); text-align: center; padding: 28px 8px; font-size: 13px; }
+    .chart-area { height: 150px; display: flex; align-items: end; justify-content: space-around; gap: 12px; padding: 10px 2px 0; border-bottom: 1px solid var(--line); }
+    .day-col { height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: end; align-items: center; gap: 8px; }
+    .bar-wrap { width: 100%; max-width: 35px; height: 112px; display: flex; align-items: end; background: #f5f5ff; border-radius: 7px 7px 3px 3px; overflow: hidden; }
+    .bar { width: 100%; min-height: 4px; background: linear-gradient(180deg,#8586ff,#595add); border-radius: 7px 7px 3px 3px; transition: height .3s; }
+    .day-label { font-size: 10px; color: #8a95a8; }
+    .chart-legend { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 11px; color: var(--muted); }
+    .legend-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--primary); margin-right: 6px; }
+    .goal-card { padding: 17px; background: linear-gradient(120deg,#f1f0ff,#f1fbf8); border-radius: 14px; margin-bottom: 12px; }
+    .goal-top { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; font-weight: 750; }
+    .goal-number { color: var(--primary); }
+    .goal-track { height: 7px; background: #dfe3f1; border-radius: 20px; margin-top: 13px; overflow: hidden; }
+    .goal-fill { height: 100%; background: linear-gradient(90deg,#7778f5,#45c5a2); border-radius: inherit; width: 68%; }
+    .goal-note { color: var(--muted); font-size: 10px; margin-top: 8px; }
+    .timer-card { background: #24264b; color: white; padding: 20px; border-radius: 16px; position: relative; overflow: hidden; }
+    .timer-card::after { content: ""; position: absolute; width: 150px; height: 150px; border: 1px solid #ffffff12; border-radius: 50%; right: -50px; top: -65px; box-shadow: 0 0 0 20px #ffffff06, 0 0 0 40px #ffffff04; }
+    .timer-card .panel-sub { color: #c4c6e2; }
+    .timer-display { font-size: 39px; font-weight: 800; letter-spacing: 1px; margin: 14px 0; font-variant-numeric: tabular-nums; }
+    .timer-controls { display: flex; gap: 8px; position: relative; z-index: 1; }
+    .timer-controls button { border: 0; border-radius: 9px; padding: 9px 13px; font-size: 11px; font-weight: 750; }
+    .timer-start { background: #8c8dff; color: white; }
+    .timer-reset { background: #ffffff19; color: #fff; }
+    .session-note { font-size: 10px; color: #c4c6e2; margin-top: 12px; }
+    .subject-list { display: grid; gap: 14px; }
+    .subject-row { display: flex; align-items: center; gap: 10px; }
+    .subject-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; background: #f1f0ff; font-size: 16px; }
+    .subject-main { flex: 1; min-width: 0; }
+    .subject-name { font-size: 12px; font-weight: 750; }
+    .subject-detail { color: var(--muted); font-size: 10px; margin-top: 4px; }
+    .subject-percent { font-size: 11px; font-weight: 800; color: #7374d8; }
+    .subject-track { height: 5px; background: #edf0f6; border-radius: 9px; margin-top: 7px; overflow: hidden; }
+    .subject-fill { height: 100%; border-radius: inherit; background: #8586f5; }
+    .modal-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 18px; background: #11182d77; z-index: 10; }
+    .modal-backdrop.show { display: flex; }
+    .modal { width: min(440px, 100%); background: white; border-radius: 18px; padding: 25px; box-shadow: 0 25px 80px #0d173344; }
+    .modal h2 { font-size: 20px; margin-bottom: 7px; }
+    .modal p { font-size: 12px; color: var(--muted); margin: 0 0 20px; line-height: 1.5; }
+    .form-field { display: grid; gap: 7px; margin-bottom: 14px; }
+    .form-field label { font-size: 11px; font-weight: 750; color: #59657c; }
+    .form-field input, .form-field select { border: 1px solid #dfe4ee; border-radius: 10px; padding: 11px 12px; outline: none; background: #fff; width: 100%; font-size: 12px; }
+    .form-field input:focus, .form-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px #5b5ce218; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 20px; }
+    .secondary-btn { border: 1px solid var(--line); background: white; border-radius: 10px; padding: 10px 14px; color: #65718a; font-size: 12px; font-weight: 700; }
+    .toast { position: fixed; right: 22px; bottom: 22px; background: #202448; color: white; border-radius: 11px; padding: 12px 16px; font-size: 12px; box-shadow: var(--shadow); opacity: 0; transform: translateY(10px); transition: .25s; pointer-events: none; z-index: 20; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .search { border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; width: 150px; font-size: 11px; outline: none; }
+    .search:focus { border-color: #b5b5ff; }
+    @media (max-width: 1050px) { .app { grid-template-columns: 210px minmax(0,1fr); } .stats { grid-template-columns: repeat(2,minmax(0,1fr)); } .content-grid { grid-template-columns: 1fr; } .right-stack { grid-template-columns: repeat(2,minmax(0,1fr)); } .right-stack .timer-card { grid-column: span 2; } }
+    @media (max-width: 680px) { .app { display: block; } aside { padding: 14px 15px; border-right: 0; border-bottom: 1px solid var(--line); gap: 14px; } .brand { padding: 0 2px; } .nav-label, .side-note { display: none; } nav { display: flex; overflow-x: auto; gap: 5px; } .nav-btn { flex: 0 0 auto; padding: 10px; } .nav-btn span { width: auto; } main { padding: 22px 14px 35px; } .topbar { align-items: flex-start; } .top-actions { gap: 6px; } .date-chip { display: none; } .profile { padding: 6px; border: 0; } .profile > span:last-child { display: none; } .stats { gap: 10px; } .stat { padding: 14px; } .stat-value { font-size: 25px; } .stat-head { font-size: 10px; } .panel { padding: 17px; } .right-stack { grid-template-columns: 1fr; } .right-stack .timer-card { grid-column: auto; } .task-time { display: none; } .search { width: 100%; } .panel-header { flex-wrap: wrap; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand"><div class="brand-mark">✦</div><span>study<span style="color:#6263e5">tracker</span></span></div>
+      <div>
+        <div class="nav-label">WORKSPACE</div>
+        <nav>
+          <button class="nav-btn active" data-view="overview"><span>▦</span> Overview</button>
+          <button class="nav-btn" data-view="tasks"><span>☑</span> My Tasks</button>
+          <button class="nav-btn" data-view="subjects"><span>▤</span> Subjects</button>
+          <button class="nav-btn" data-view="progress"><span>◷</span> Progress</button>
+        </nav>
+      </div>
+      <div class="side-note">
+        <div class="emoji">🌱</div>
+        <h3>Small steps add up.</h3>
+        <p>Every focused session brings you closer to your learning goals. Keep going!</p>
+        <div class="mini-progress"><div id="sideProgress"></div></div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="welcomeEyebrow">YOUR LEARNING SPACE</div>
+          <h1 id="greeting">Good morning, Achuth 👋</h1>
+          <div class="subtitle">Make today count, one focused session at a time.</div>
+        </div>
+        <div class="top-actions">
+          <div class="date-chip">▦ <span id="todayDate"></span></div>
+          <div class="profile"><div class="avatar">A</div><span>Achuth</span></div>
+        </div>
+      </header>
+
+      <section class="stats">
+        <article class="stat"><div class="stat-head">Tasks completed <div class="stat-icon">✓</div></div><div class="stat-value" id="completedStat">2/5</div><div class="stat-foot"><strong id="completionFoot">40%</strong> of your tasks done</div></article>
+        <article class="stat"><div class="stat-head">Study time today <div class="stat-icon" style="background:#e0f8ee">◷</div></div><div class="stat-value" id="studyTimeStat">0m</div><div class="stat-foot">Focused time recorded</div></article>
+        <article class="stat"><div class="stat-head">Current streak <div class="stat-icon" style="background:#fff0e6">♨</div></div><div class="stat-value" id="streakStat">3 days</div><div class="stat-foot">Consistency is progress</div></article>
+        <article class="stat"><div class="stat-head">Subjects <div class="stat-icon" style="background:#e6f3ff">▤</div></div><div class="stat-value" id="subjectStat">4</div><div class="stat-foot">Keep your learning balanced</div></article>
+      </section>
+
+      <div class="content-grid">
+        <div class="left-stack">
+          <section class="panel" id="tasksPanel">
+            <div class="panel-header">
+              <div><h2>Today's tasks</h2><div class="panel-sub">A clear plan makes a productive day.</div></div>
+              <button class="primary-btn" id="addTaskBtn">＋ Add task</button>
+            </div>
+            <div class="filter-row">
+              <button class="filter active" data-filter="all">All tasks</button>
+              <button class="filter" data-filter="pending">Pending</button>
+              <button class="filter" data-filter="completed">Completed</button>
+              <input class="search" id="searchInput" type="search" placeholder="⌕ Search tasks..." aria-label="Search tasks" />
+            </div>
+            <div class="task-list" id="taskList"></div>
+          </section>
+
+          <section class="panel" id="progressPanel">
+            <div class="panel-header"><div><h2>Study activity</h2><div class="panel-sub">Your focus time across the week</div></div><span class="tag green">Weekly view</span></div>
+            <div class="chart-area" id="weeklyChart"></div>
+            <div class="chart-legend"><span><i class="legend-dot"></i>Study time</span><span id="weeklyTotal">0 hours this week</span></div>
+          </section>
+        </div>
+
+        <div class="right-stack">
+          <section class="panel">
+            <div class="panel-header"><div><h2>Weekly goal</h2><div class="panel-sub">Build a routine you can maintain</div></div><span>🎯</span></div>
+            <div class="goal-card">
+              <div class="goal-top"><span>Study 10 hours</span><span class="goal-number" id="goalPercent">0%</span></div>
+              <div class="goal-track"><div class="goal-fill" id="goalFill"></div></div>
+              <div class="goal-note" id="goalNote">0 of 600 minutes completed</div>
+            </div>
+            <button class="text-btn" id="editGoalBtn">Edit weekly goal →</button>
+          </section>
+
+          <section class="timer-card">
+            <div class="panel-header" style="margin-bottom:0"><div><h2>Focus timer</h2><div class="panel-sub">A little focus goes a long way</div></div><span style="font-size:20px">◷</span></div>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-controls"><button class="timer-start" id="timerToggle">▶ Start focus</button><button class="timer-reset" id="timerReset">↺ Reset</button></div>
+            <div class="session-note" id="timerNote">25-minute session · your time is tracked when complete</div>
+          </section>
+
+          <section class="panel" id="subjectsPanel">
+            <div class="panel-header"><div><h2>My subjects</h2><div class="panel-sub">Your learning at a glance</div></div><button class="text-btn" id="addSubjectBtn">＋ Add</button></div>
+            <div class="subject-list" id="subjectList"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <form class="modal" id="taskForm">
+      <h2 id="taskModalTitle">Add a study task</h2><p>Break your goals into small, achievable steps.</p>
+      <div class="form-field"><label for="taskTitle">Task name</label><input id="taskTitle" required maxlength="90" placeholder="e.g. Revise linked lists" /></div>
+      <div class="form-field"><label for="taskSubject">Subject</label><select id="taskSubject"></select></div>
+      <div class="form-field"><label for="taskDuration">Estimated time</label><select id="taskDuration"><option value="15">15 minutes</option><option value="25" selected>25 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option><option value="90">1.5 hours</option></select></div>
+      <div class="modal-actions"><button class="secondary-btn" type="button" data-close="taskModal">Cancel</button><button class="primary-btn" type="submit">Save task</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="subjectModal" role="dialog" aria-modal="true" aria-labelledby="subjectModalTitle">
+    <form class="modal" id="subjectForm">
+      <h2 id="subjectModalTitle">Add a subject</h2><p>Keep all your courses organised in one place.</p>
+      <div class="form-field"><label for="subjectName">Subject name</label><input id="subjectName" required maxlength="45" placeholder="e.g. Operating Systems" /></div>
+      <div class="form-field"><label for="subjectTarget">Weekly study target</label><select id="subjectTarget"><option value="60">1 hour</option><option value="120" selected>2 hours</option><option value="180">3 hours</option><option value="300">5 hours</option></select></div>
+      <div class="modal-actions"><button class="secondary-btn" type="button" data-close="subjectModal">Cancel</button><button class="primary-btn" type="submit">Add subject</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="goalModal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
+    <form class="modal" id="goalForm">
+      <h2 id="goalModalTitle">Set your weekly goal</h2><p>Choose a realistic goal for your study time.</p>
+      <div class="form-field"><label for="goalHours">Weekly goal (hours)</label><input id="goalHours" type="number" min="1" max="100" required value="10" /></div>
+      <div class="modal-actions"><button class="secondary-btn" type="button" data-close="goalModal">Cancel</button><button class="primary-btn" type="submit">Save goal</button></div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const STORAGE_KEY = 'studyTracker.v1';
+    const seed = {
+      tasks: [
+        {id:1,title:'Revise arrays and linked lists',subject:'Data Structures',minutes:45,done:true},
+        {id:2,title:'Practise CPU scheduling problems',subject:'Operating Systems',minutes:30,done:false},
+        {id:3,title:'Review Git branching and merging',subject:'Web Development',minutes:25,done:false},
+        {id:4,title:'Solve 5 calculus questions',subject:'Mathematics',minutes:40,done:true},
+        {id:5,title:'Read process synchronization notes',subject:'Operating Systems',minutes:30,done:false}
+      ],
+      subjects: [
+        {name:'Data Structures',icon:'⌘',target:180,color:'#8586f5'},
+        {name:'Operating Systems',icon:'⚙',target:120,color:'#53bfa3'},
+        {name:'Web Development',icon:'◇',target:120,color:'#f3a46d'},
+        {name:'Mathematics',icon:'π',target:180,color:'#6aaddb'}
+      ],
+      sessions: [], goal:600, streak:3, nextId:6
+    };
+    let state;
+    try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || structuredClone(seed); }
+    catch { state = JSON.parse(JSON.stringify(seed)); }
+    let currentFilter = 'all', searchTerm = '', secondsLeft = 25*60, timerRunning = false, timerInterval = null;
+    const $ = id => document.getElementById(id);
+    const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const todayKey = () => new Date().toISOString().slice(0,10);
+    function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+    function minsToday(){ return state.sessions.filter(s=>s.date===todayKey()).reduce((sum,s)=>sum+s.minutes,0); }
+    function minsWeek(){ const start=new Date(); start.setHours(0,0,0,0); start.setDate(start.getDate()-6); return state.sessions.filter(s=>new Date(s.date+'T00:00:00')>=start).reduce((sum,s)=>sum+s.minutes,0); }
+    function showToast(message){ const t=$('toast'); t.textContent=message; t.classList.add('show'); clearTimeout(showToast.timeout); showToast.timeout=setTimeout(()=>t.classList.remove('show'),2400); }
+    function renderStats(){
+      const done=state.tasks.filter(t=>t.done).length, total=state.tasks.length, percent=total?Math.round(done/total*100):0, today=minsToday();
+      $('completedStat').textContent=`${done}/${total}`; $('completionFoot').textContent=percent+'%';
+      $('studyTimeStat').textContent=today>=60?`${Math.floor(today/60)}h ${today%60}m`:`${today}m`;
+      $('streakStat').textContent=`${state.streak} days`; $('subjectStat').textContent=state.subjects.length;
+      $('sideProgress').style.width=percent+'%';
+      const goalPct=Math.min(100,Math.round(minsWeek()/Math.max(1,state.goal)*100));
+      $('goalPercent').textContent=goalPct+'%'; $('goalFill').style.width=goalPct+'%';
+      $('goalNote').textContent=`${minsWeek()} of ${state.goal} minutes completed`;
+    }
+    function renderTasks(){
+      const list=$('taskList');
+      const tasks=state.tasks.filter(t=>(currentFilter==='all'||(currentFilter==='pending'&&!t.done)||(currentFilter==='completed'&&t.done)) && (t.title+' '+t.subject).toLowerCase().includes(searchTerm));
+      list.innerHTML=tasks.length?tasks.map(t=>`<div class="task ${t.done?'done':''}">
+        <input class="task-check" type="checkbox" aria-label="Mark ${escapeHTML(t.title)} complete" data-task="${t.id}" ${t.done?'checked':''}>
+        <div class="task-info"><div class="task-title">${escapeHTML(t.title)}</div><div class="task-meta"><span class="tag">${escapeHTML(t.subject)}</span><span>◷ ${t.minutes} min</span>${t.done?'<span class="tag green">Completed</span>':t.minutes>=45?'<span class="tag orange">Long session</span>':''}</div></div>
+        <div class="task-time">${t.done?'Done ✓':'To do'}</div></div>`).join(''):'<div class="empty">No tasks here. Add a task to get started ✨</div>';
+      list.querySelectorAll('[data-task]').forEach(el=>el.addEventListener('change',()=>{const task=state.tasks.find(t=>t.id===Number(el.dataset.task)); if(task){task.done=el.checked;save();renderAll();showToast(task.done?'Task completed — nice work!':'Task marked as pending');}}));
+    }
+    function renderSubjects(){
+      $('subjectList').innerHTML=state.subjects.length?state.subjects.map((s,i)=>{
+        const done=state.sessions.filter(x=>x.subject===s.name).reduce((sum,x)=>sum+x.minutes,0);
+        const pct=Math.min(100,Math.round(done/Math.max(1,s.target)*100));
+        return `<div class="subject-row"><div class="subject-icon">${escapeHTML(s.icon||'▤')}</div><div class="subject-main"><div class="subject-name">${escapeHTML(s.name)}</div><div class="subject-detail">${done} min studied · ${Math.max(0,s.target-done)} min to target</div><div class="subject-track"><div class="subject-fill" style="width:${pct}%;background:${s.color||'#8586f5'}"></div></div></div><div class="subject-percent">${pct}%</div></div>`;
+      }).join(''):'<div class="empty">Add your first subject.</div>';
+      $('taskSubject').innerHTML=state.subjects.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('');
+    }
+    function renderChart(){
+      const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], today=new Date(), dayIndex=(today.getDay()+6)%7;
+      const values=labels.map((label,i)=>{const d=new Date(today);d.setDate(today.getDate()-((dayIndex-i+7)%7));const key=d.toISOString().slice(0,10);return state.sessions.filter(s=>s.date===key).reduce((sum,s)=>sum+s.minutes,0);});
+      const max=Math.max(60,...values);
+      $('weeklyChart').innerHTML=labels.map((label,i)=>`<div class="day-col"><div class="bar-wrap" title="${values[i]} minutes"><div class="bar" style="height:${Math.max(4,values[i]/max*100)}%"></div></div><span class="day-label">${label}</span></div>`).join('');
+      const total=values.reduce((a,b)=>a+b,0); $('weeklyTotal').textContent=`${(total/60).toFixed(1)} hours this week`;
+    }
+    function renderAll(){renderStats();renderTasks();renderSubjects();renderChart();}
+    function openModal(id){$(id).classList.add('show');const input=$(id).querySelector('input');if(input) setTimeout(()=>input.focus(),50);}
+    function closeModal(id){$(id).classList.remove('show');}
+    $('addTaskBtn').addEventListener('click',()=>{if(!state.subjects.length){showToast('Add a subject first.');return;}openModal('taskModal');});
+    $('addSubjectBtn').addEventListener('click',()=>openModal('subjectModal'));
+    $('editGoalBtn').addEventListener('click',()=>{ $('goalHours').value=Math.max(1,state.goal/60);openModal('goalModal');});
+    document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+    document.querySelectorAll('.modal-backdrop').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)closeModal(bg.id);}));
+    $('taskForm').addEventListener('submit',e=>{e.preventDefault();const title=$('taskTitle').value.trim();if(!title)return;state.tasks.push({id:state.nextId++,title,subject:$('taskSubject').value||'General',minutes:Number($('taskDuration').value),done:false});save();renderAll();closeModal('taskModal');e.target.reset();showToast('Your new task has been added.');});
+    $('subjectForm').addEventListener('submit',e=>{e.preventDefault();const name=$('subjectName').value.trim();if(!name)return;if(state.subjects.some(s=>s.name.toLowerCase()===name.toLowerCase())){showToast('That subject already exists.');return;}const icons=['▤','⌘','π','◇','⚙','✦'];state.subjects.push({name,icon:icons[state.subjects.length%icons.length],target:Number($('subjectTarget').value),color:['#8586f5','#53bfa3','#f3a46d','#6aaddb'][state.subjects.length%4]});save();renderAll();closeModal('subjectModal');e.target.reset();showToast('Subject added successfully.');});
+    $('goalForm').addEventListener('submit',e=>{e.preventDefault();state.goal=Number($('goalHours').value)*60;save();renderStats();closeModal('goalModal');showToast('Weekly goal updated.');});
+    $('searchInput').addEventListener('input',e=>{searchTerm=e.target.value.toLowerCase().trim();renderTasks();});
+    document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));renderTasks();}));
+    function updateTimerDisplay(){const m=Math.floor(secondsLeft/60),s=secondsLeft%60;$('timerDisplay').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+    function stopTimer(){timerRunning=false;clearInterval(timerInterval);timerInterval=null;$('timerToggle').textContent='▶ Resume focus';}
+    $('timerToggle').addEventListener('click',()=>{
+      if(timerRunning){stopTimer();return;}
+      if(secondsLeft<=0)secondsLeft=25*60;
+      timerRunning=true;$('timerToggle').textContent='Ⅱ Pause';
+      timerInterval=setInterval(()=>{
+        secondsLeft--;updateTimerDisplay();
+        if(secondsLeft<=0){stopTimer();state.sessions.push({date:todayKey(),minutes:25,subject:'Focus session'});save();renderAll();secondsLeft=25*60;updateTimerDisplay();$('timerToggle').textContent='▶ Start focus';$('timerNote').textContent='Session complete! 25 minutes recorded.';showToast('Focus session complete — great job!');}
+      },1000);
+    });
+    $('timerReset').addEventListener('click',()=>{stopTimer();secondsLeft=25*60;updateTimerDisplay();$('timerNote').textContent='25-minute session · your time is tracked when complete';$('timerToggle').textContent='▶ Start focus';});
+    document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x===b));
+      const view=b.dataset.view;
+      if(view==='tasks')$('tasksPanel').scrollIntoView({behavior:'smooth',block:'start'});
+      else if(view==='subjects')$('subjectsPanel').scrollIntoView({behavior:'smooth',block:'center'});
+      else if(view==='progress')$('progressPanel').scrollIntoView({behavior:'smooth',block:'center'});
+      else window.scrollTo({top:0,behavior:'smooth'});
+    }));
+    const now=new Date();$('todayDate').textContent=now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    $('greeting').textContent=(now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':'Good evening')+', Achuth 👋';
+    renderAll();
+  </script>
+</body>
+</html>
